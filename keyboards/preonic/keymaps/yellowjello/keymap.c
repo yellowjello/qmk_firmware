@@ -24,7 +24,8 @@ enum preonic_layers {
   _LOWER,
   _RAISE,
   _ADJUST,
-  _SPECIAL
+  _SPECIAL,
+  _SPECIAL2
 };
 
 enum preonic_keycodes {
@@ -33,7 +34,8 @@ enum preonic_keycodes {
   DVORAK,
   LOWER,
   RAISE,
-  BACKLIT
+  BACKLIT,
+  SPECIAL
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -56,7 +58,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_TAB,       KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,        \
   KC_ESC,       KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,        \
   KC_LSFT,      KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, RSFT_T(KC_ENT), \
-  MO(_SPECIAL), KC_LCTL, KC_LALT, KC_LGUI, LOWER,   KC_SPC,  KC_SPC,  RAISE,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT         \
+  SPECIAL,      KC_LCTL, KC_LALT, KC_LGUI, LOWER,   KC_SPC,  KC_SPC,  RAISE,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT         \
 ),
 
 /* Colemak
@@ -168,11 +170,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * ,-----------------------------------------------------------------------------------.
  * |      |      |      |      |      |      |   　 |      |      |      |      |      |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |      |      |  Up  |      |      |      |      |   7  |   8  |   9  |      |      |
+ * |      |      |  Up  |      |      |      |      |      |      |      |      |      |
  * |------+------+------+------+------+-------------+------+------+------+------+------|
- * |      | Left | Down | Right|      |      |      |   4  |   5  |   6  |      |      |
+ * |      | Left | Down | Right|      |      | Left | Down |  Up  |Right |      |      |
  * |------+------+------+------+------+------|------+------+------+------+------+------|
- * |      |      |      |      |      |      |      |   1  |   2  |   3  |      |      |
+ * |      |      |      |      |      |      |      |      |      |      |      |      |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
  * |      |      |      |      |      |             |      |      |      |      |      |
  * `-----------------------------------------------------------------------------------'
@@ -183,16 +185,29 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, _______, \
   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______  \
-)
-/*
-[_SPECIAL] = LAYOUT_preonic_grid( \
+),
+
+/* Special 2
+ * ,-----------------------------------------------------------------------------------.
+ * |      |      |      |      |      |      |   　 |      |      |      |      |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |      |  Up  |      |      |      |      |   7  |   8  |   9  |      |      |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |      | Left | Down | Right|      |      |      |   4  |   5  |   6  |      |      |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |   1  |   2  |   3  |      |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |      |      |      |      |             |      |      |      |      |      |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_SPECIAL2] = LAYOUT_preonic_grid( \
   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
   _______, _______, KC_UP,   _______, _______, _______, _______, KC_7,    KC_8,    KC_9,    _______, _______, \
   _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, _______, KC_4,    KC_5,    KC_6,    _______, _______, \
   _______, _______, _______, _______, _______, _______, _______, KC_1,    KC_2,    KC_3,    _______, _______, \
   _______, _______, _______, _______, _______, _______, _______, _______, KC_0,    _______, _______, _______  \
 )
-*/
+
 
 };
 
@@ -216,24 +231,35 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           }
           return false;
           break;
+        case SPECIAL:
+          if (record->event.pressed) {
+            layer_on(_SPECIAL);
+          } else {
+            layer_off(_SPECIAL);
+          }
+          update_tri_layer(_SPECIAL, _LOWER, _SPECIAL2);
+
+          return false;
+          break;
         case LOWER:
           if (record->event.pressed) {
             layer_on(_LOWER);
-            update_tri_layer(_LOWER, _RAISE, _ADJUST);
           } else {
             layer_off(_LOWER);
-            update_tri_layer(_LOWER, _RAISE, _ADJUST);
           }
+          update_tri_layer(_LOWER, _RAISE, _ADJUST);
+          update_tri_layer(_SPECIAL, _LOWER, _SPECIAL2);
+
           return false;
           break;
         case RAISE:
           if (record->event.pressed) {
             layer_on(_RAISE);
-            update_tri_layer(_LOWER, _RAISE, _ADJUST);
           } else {
             layer_off(_RAISE);
-            update_tri_layer(_LOWER, _RAISE, _ADJUST);
           }
+          update_tri_layer(_LOWER, _RAISE, _ADJUST);
+
           return false;
           break;
         case BACKLIT:
